@@ -1,83 +1,65 @@
-const router   = require('express').Router();
-const supabase  = require('../supabase');
-const { v4: uuid } = require('uuid');
+const router = require('express').Router();
+const supabase = require('../supabase');
 
-// Genera código único tipo "FIS-3A01"
 function genCode(name) {
   const prefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
-  const suffix  = Math.floor(1000 + Math.random() * 9000);
+  const suffix = Math.floor(1000 + Math.random() * 9000);
   return `${prefix}-${suffix}`;
 }
 
-// ── GET /api/classes ─────────────────────────────────────────
-// Profesor: todas sus clases con conteo de alumnos y tareas
-// Estudiante: todas las clases en las que está inscrito
+// GET CLASSES
 router.get('/', async (req, res) => {
   const userId = req.headers['x-user-id'];
-  const role   = req.headers['x-user-role'];
-  if (!userId || !role) return res.status(401).json({ error: 'Faltan headers x-user-id y x-user-role' });
+  const role = req.headers['x-user-role'];
 
+  if (!userId || !role) {
+    return res.status(401).json({ error: 'Missing auth headers' });
+  }
+
+  // TEACHER
   if (role === 'teacher') {
-    // Clases creadas por el profesor + count de alumnos inscritos
     const { data, error } = await supabase
       .from('classes')
       .select(`
         *,
-        enrollments(count),
-        tasks(count)
+        enrollments:enrollments(count),
+        tasks:tasks(count)
       `)
       .eq('teacher_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) return res.status(400).json({ error: error.message });
 
-    const result = data.map(c => ({
+    return res.json(data.map(c => ({
       ...c,
-      student_count: c.enrollments[0]?.count ?? 0,
-      task_count:    c.tasks[0]?.count ?? 0,
-    }));
-    return res.json(result);
+      student_count: c.enrollments?.[0]?.count ?? 0,
+      task_count: c.tasks?.[0]?.count ?? 0
+    })));
   }
 
-  // Estudiante: clases en las que está inscrito
+  // STUDENT
   const { data, error } = await supabase
     .from('enrollments')
     .select(`
       class_id,
-      classes(
-        *,
-        users!classes_teacher_id_fkey(name)
-      )
+      classes(*, users:users!classes_teacher_id_fkey(name))
     `)
     .eq('student_id', userId);
 
   if (error) return res.status(400).json({ error: error.message });
 
-  const result = data.map(e => ({
+  res.json(data.map(e => ({
     ...e.classes,
-    teacher_name: e.classes.users?.name ?? 'Profesor',
-  }));
-  res.json(result);
+    teacher_name: e.classes.users?.name || 'Teacher'
+  })));
 });
 
-// ── GET /api/classes/:id ─────────────────────────────────────
-router.get('/:id', async (req, res) => {
-  const { data, error } = await supabase
-    .from('classes')
-    .select(`*, users!classes_teacher_id_fkey(name, email)`)
-    .eq('id', req.params.id)
-    .single();
-
-  if (error) return res.status(404).json({ error: 'Clase no encontrada' });
-  res.json(data);
-});
-
-// ── POST /api/classes ────────────────────────────────────────
-// Solo profesores
+// CREATE CLASS
 router.post('/', async (req, res) => {
   const userId = req.headers['x-user-id'];
   const { name, section, room, color, icon } = req.body;
-  if (!name) return res.status(400).json({ error: 'El campo name es obligatorio' });
+
+  if (!name) return res.status(400).json({ error: 'Missing name' });
 
   const code = genCode(name);
 
@@ -85,10 +67,10 @@ router.post('/', async (req, res) => {
     .from('classes')
     .insert({
       name,
-      section: section || '',
-      room:    room    || '',
-      color:   color   || 'green',
-      icon:    icon    || '📖',
+      section,
+      room,
+      color,
+      icon,
       code,
       teacher_id: userId
     })
@@ -96,51 +78,40 @@ router.post('/', async (req, res) => {
     .single();
 
   if (error) return res.status(400).json({ error: error.message });
+
   res.status(201).json(data);
 });
 
-// ── POST /api/classes/join ───────────────────────────────────
-// Estudiante se une a una clase con código
+// JOIN CLASS
 router.post('/join', async (req, res) => {
   const userId = req.headers['x-user-id'];
   const { code } = req.body;
-  if (!code) return res.status(400).json({ error: 'Falta el código de clase' });
 
-  // Buscar la clase por código
-  const { data: classData, error: classErr } = await supabase
+  const { data: classData, error } = await supabase
     .from('classes')
     .select('*')
     .eq('code', code.toUpperCase())
     .single();
 
-  if (classErr || !classData) return res.status(404).json({ error: 'Código de clase no válido' });
+  if (error || !classData) {
+    return res.status(404).json({ error: 'Invalid class code' });
+  }
 
-  // Inscribir al alumno (upsert para no duplicar)
-  const { error: enrollErr } = await supabase
+  const { error: enrollError } = await supabase
     .from('enrollments')
-    .upsert({ class_id: classData.id, student_id: userId }, { onConflict: 'class_id,student_id', ignoreDuplicates: true });
+    .upsert({
+      class_id: classData.id,
+      student_id: userId
+    }, {
+      onConflict: 'class_id,student_id'
+    });
 
-  if (enrollErr) return res.status(400).json({ error: enrollErr.message });
+  if (enrollError) return res.status(400).json({ error: enrollError.message });
 
-  res.json({ message: `Te uniste a "${classData.name}"`, class: classData });
+  res.json({ message: 'Joined class', class: classData });
 });
 
-// ── GET /api/classes/:id/students ───────────────────────────
-// Profesor ve los alumnos de una clase
-router.get('/:id/students', async (req, res) => {
-  const { data, error } = await supabase
-    .from('enrollments')
-    .select(`
-      student_id,
-      users!enrollments_student_id_fkey(id, name, email)
-    `)
-    .eq('class_id', req.params.id);
-
-  if (error) return res.status(400).json({ error: error.message });
-  res.json(data.map(e => e.users));
-});
-
-// ── DELETE /api/classes/:id ──────────────────────────────────
+// DELETE CLASS
 router.delete('/:id', async (req, res) => {
   const userId = req.headers['x-user-id'];
 
@@ -148,10 +119,11 @@ router.delete('/:id', async (req, res) => {
     .from('classes')
     .delete()
     .eq('id', req.params.id)
-    .eq('teacher_id', userId); // solo el dueño puede borrar
+    .eq('teacher_id', userId);
 
   if (error) return res.status(400).json({ error: error.message });
-  res.json({ message: 'Clase eliminada' });
+
+  res.json({ message: 'Class deleted' });
 });
 
 module.exports = router;
