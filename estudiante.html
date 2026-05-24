@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EduClass — Estudiante</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f0f4ff;
+    --surface: #ffffff;
+    --primary: #1d4ed8;
+    --primary-light: #3b82f6;
+    --accent: #f4a261;
+    --accent2: #e76f51;
+    --text: #1c1c1c;
+    --text-muted: #6b7280;
+    --border: #dde3f0;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --radius: 14px;
+    --danger: #dc2626;
+    --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* TOPBAR */
+  .topbar {
+    height: 64px; background: white; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+  }
+  .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--primary); }
+  .topbar-logo span { color: var(--accent2); }
+  .topbar-search { flex: 1; max-width: 480px; margin: 0 auto; }
+  .topbar-search input {
+    width: 100%; padding: 9px 16px 9px 40px; border: 2px solid var(--border); border-radius: 24px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s;
+    background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 14px center;
+  }
+  .topbar-search input:focus { border-color: var(--primary); background: white; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .role-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; background: #dbeafe; color: var(--primary); }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+
+  /* LAYOUT */
+  .app-body { display: flex; flex: 1; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px; background: white; border-right: 1px solid var(--border);
+    padding: 20px 12px; display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
+  }
+  .sidebar-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); padding: 12px 12px 6px; }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px;
+    cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text); transition: all 0.15s;
+  }
+  .sidebar-item:hover { background: var(--bg); }
+  .sidebar-item.active { background: #dbeafe; color: var(--primary); font-weight: 700; }
+  .sidebar-item .icon { font-size: 18px; width: 24px; text-align: center; }
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); display: inline-block; margin-left: auto; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 28px; overflow-y: auto; }
+  .page { display: none; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* PAGE HEADER */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 26px; }
+  .page-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+
+  /* BUTTONS */
+  .btn { padding: 10px 20px; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+  .btn-outline { background: white; border: 2px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--card-shadow); }
+  .stat-number { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--primary); }
+  .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* CLASS CARDS */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .class-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+  .class-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.12); }
+  .class-card-header { height: 100px; padding: 20px; position: relative; }
+  .class-card-header.green  { background: linear-gradient(135deg, #1a472a, #2d6a4f); }
+  .class-card-header.blue   { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
+  .class-card-header.orange { background: linear-gradient(135deg, #ea580c, #f97316); }
+  .class-card-header.purple { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+  .class-card-header.teal   { background: linear-gradient(135deg, #0d9488, #14b8a6); }
+  .class-card-title { color: white; font-weight: 700; font-size: 17px; }
+  .class-card-sub   { color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 4px; }
+  .class-card-avatar { position: absolute; right: 16px; bottom: -18px; width: 36px; height: 36px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .class-card-body { padding: 28px 16px 10px; font-size: 13px; color: var(--text-muted); }
+  .class-card-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--border); }
+  .class-code { font-size: 12px; color: var(--text-muted); font-family: monospace; letter-spacing: 1px; }
+
+  /* FEED */
+  .feed-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--card-shadow); border-left: 4px solid transparent; }
+  .feed-card.announcement { border-color: var(--accent); }
+  .feed-card.task { border-color: var(--primary); }
+  .feed-card.task.done { border-color: var(--success); opacity: .75; }
+  .feed-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .feed-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .feed-icon.ann  { background: #fef3c7; }
+  .feed-icon.task { background: #dbeafe; }
+  .feed-icon.done { background: #dcfce7; }
+  .feed-title { font-weight: 700; font-size: 15px; }
+  .feed-meta  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .feed-body  { font-size: 14px; color: #374151; line-height: 1.6; }
+  .feed-footer { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+  /* CHIPS */
+  .chip { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+  .chip-green  { background: #dcfce7; color: var(--success); }
+  .chip-blue   { background: #dbeafe; color: var(--primary); }
+  .chip-orange { background: #fed7aa; color: #c2410c; }
+  .chip-gray   { background: var(--bg); color: var(--text-muted); }
+  .chip-red    { background: #fee2e2; color: var(--danger); }
+
+  /* TABLE */
+  .table-wrap { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--bg); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); }
+  tbody tr { border-top: 1px solid var(--border); }
+  tbody tr:hover { background: var(--bg); }
+  tbody td { padding: 14px 16px; font-size: 14px; }
+
+  /* PROGRESS */
+  .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 4px; background: var(--primary); transition: width 0.5s; }
+
+  /* GRADE */
+  .grade { font-weight: 700; font-size: 15px; }
+  .grade.A { color: var(--success); }
+  .grade.B { color: var(--primary); }
+  .grade.C { color: #d97706; }
+  .grade.F { color: var(--danger); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 20px; padding: 36px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.35s cubic-bezier(.16,1,.3,1); }
+  @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 20px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* FORM */
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing:.4px; margin-bottom: 6px; }
+  .field input, .field textarea { width: 100%; padding: 11px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; background: var(--bg); color: var(--text); }
+  .field input:focus, .field textarea:focus { border-color: var(--primary); background: white; }
+  .field textarea { min-height: 100px; resize: vertical; }
+
+  /* CALENDAR */
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; text-align: center; }
+  .cal-day { padding: 8px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s; }
+  .cal-day:hover { background: #dbeafe; }
+  .cal-today { background: var(--primary); color: white; font-weight: 700; }
+  .cal-event { background: var(--accent); color: white; font-weight: 600; }
+
+  /* PRIORITY BANNER */
+  .priority-banner {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border-radius: var(--radius); padding: 20px 24px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px; color: white;
+  }
+  .priority-banner .pb-icon { font-size: 32px; }
+  .priority-banner .pb-title { font-weight: 700; font-size: 16px; }
+  .priority-banner .pb-sub { font-size: 13px; opacity: .85; margin-top: 2px; }
+  .priority-banner .pb-action { margin-left: auto; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">Edu<span>Class</span></div>
+  <div class="topbar-search"><input type="text" placeholder="Buscar clases, tareas…" /></div>
+  <div class="topbar-right">
+    <span class="role-badge">🎒 Estudiante</span>
+    <div class="avatar">E</div>
+  </div>
+</div>
+
+<div class="app-body">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Principal</div>
+    <div class="sidebar-item active" onclick="navigate('home')" id="nav-home"><span class="icon">🏠</span> Inicio</div>
+    <div class="sidebar-item" onclick="navigate('classes')" id="nav-classes"><span class="icon">📚</span> Mis Clases</div>
+    <div class="sidebar-label">Académico</div>
+    <div class="sidebar-item" onclick="navigate('pending')" id="nav-pending">
+      <span class="icon">⏰</span> Pendientes <span class="notif-dot"></span>
+    </div>
+    <div class="sidebar-item" onclick="navigate('grades')" id="nav-grades"><span class="icon">🏆</span> Mis Notas</div>
+    <div class="sidebar-item" onclick="navigate('calendar')" id="nav-calendar"><span class="icon">📅</span> Calendario</div>
+    <div class="sidebar-label">Más</div>
+    <div class="sidebar-item" onclick="navigate('joined')" id="nav-joined"><span class="icon">➕</span> Unirse a clase</div>
+  </nav>
+
+  <main class="main">
+
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="page-header">
+        <div class="page-title">Mis Clases</div>
+        <button class="btn btn-primary" onclick="openModal('modal-join-home')">+ Unirse a clase</button>
+      </div>
+      <div class="cards-grid" id="home-classes-grid"></div>
+    </div>
+
+    <!-- MIS CLASES -->
+    <div class="page" id="page-classes">
+      <div class="page-header">
+        <div><div class="page-title">Mis Clases</div><div class="page-subtitle">Clases en las que estás inscrito</div></div>
+        <button class="btn btn-primary" onclick="navigate('joined')">+ Unirse</button>
+      </div>
+      <div class="cards-grid" id="classes-grid"></div>
+    </div>
+
+    <!-- PENDIENTES -->
+    <div class="page" id="page-pending">
+      <div class="page-header">
+        <div><div class="page-title">Tareas Pendientes</div><div class="page-subtitle">Lo que debes entregar próximamente</div></div>
+      </div>
+
+      <div class="feed-card task" id="pend-1">
+        <div class="feed-card-header">
+          <div class="feed-icon task">📝</div>
+          <div><div class="feed-title">Ejercicios cap. 5</div><div class="feed-meta">Física Moderna · Vence 15 mayo 2026</div></div>
+          <span class="chip chip-orange" style="margin-left:auto;">🔥 Urgente</span>
+        </div>
+        <div class="feed-body">Resuelve los ejercicios 1 al 20. Muestra procedimiento completo.</div>
+        <div class="feed-footer">
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-submit','Ejercicios cap. 5','Física Moderna','15 mayo 2026')">Entregar</button>
+          <span style="font-size:13px;color:var(--text-muted);align-self:center;">100 pts · Faltan 0 días</span>
+        </div>
+      </div>
+
+      <div class="feed-card task" id="pend-2">
+        <div class="feed-card-header">
+          <div class="feed-icon task">📐</div>
+          <div><div class="feed-title">Mapa conceptual Rev. Industrial</div><div class="feed-meta">Historia Universal · Vence 20 mayo 2026</div></div>
+          <span class="chip chip-blue" style="margin-left:auto;">📅 5 días</span>
+        </div>
+        <div class="feed-body">Mapa conceptual con los principales eventos y causas de la Rev. Industrial.</div>
+        <div class="feed-footer">
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-submit','Mapa conceptual','Historia Universal','20 mayo 2026')">Entregar</button>
+          <span style="font-size:13px;color:var(--text-muted);align-self:center;">80 pts</span>
+        </div>
+      </div>
+
+      <div class="feed-card task" id="pend-3">
+        <div class="feed-card-header">
+          <div class="feed-icon task">🔬</div>
+          <div><div class="feed-title">Reporte de laboratorio — Titulación</div><div class="feed-meta">Química Orgánica · Vence 25 mayo 2026</div></div>
+          <span class="chip chip-gray" style="margin-left:auto;">📋 Próximo</span>
+        </div>
+        <div class="feed-body">Documenta el experimento de titulación ácido-base realizado en el laboratorio.</div>
+        <div class="feed-footer">
+          <button class="btn btn-sm btn-primary" onclick="openModal('modal-submit','Reporte de laboratorio','Química Orgánica','25 mayo 2026')">Entregar</button>
+          <span style="font-size:13px;color:var(--text-muted);align-self:center;">90 pts · 6 días</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIS NOTAS -->
+    <div class="page" id="page-grades">
+      <div class="page-header">
+        <div><div class="page-title">Mis Notas</div><div class="page-subtitle">Tu historial académico completo</div></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-number" style="color:var(--success)">8.6</div><div class="stat-label">Promedio general</div></div>
+        <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Entregadas</div></div>
+        <div class="stat-card"><div class="stat-number" style="color:var(--accent2)">3</div><div class="stat-label">Pendientes</div></div>
+        <div class="stat-card"><div class="stat-number" style="color:var(--danger)">0</div><div class="stat-label">Sin entregar</div></div>
+      </div>
+
+      <!-- Progreso por materia -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">
+        <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);">
+          <div style="font-weight:700;margin-bottom:4px;">⚛️ Física Moderna</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--primary);">9.0</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">5 de 6 tareas entregadas</div>
+        </div>
+        <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);">
+          <div style="font-weight:700;margin-bottom:4px;">🏛️ Historia Universal</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--primary);">8.5</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">4 de 5 tareas entregadas</div>
+        </div>
+        <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);">
+          <div style="font-weight:700;margin-bottom:4px;">📐 Matemáticas 3°B</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--primary);">8.0</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">3 de 4 tareas entregadas</div>
+        </div>
+        <div style="background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--card-shadow);">
+          <div style="font-weight:700;margin-bottom:4px;">🧪 Química Orgánica</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:#d97706">8.8</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:88%;background:#d97706"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">All tasks turned in</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tarea</th><th>Clase</th><th>Entrega</th><th>Calificación</th><th>Comentario del profesor</th></tr></thead>
+          <tbody>
+            <tr><td><b>Práctica 1</b></td><td>Física Moderna</td><td><span class="chip chip-green">✅ A tiempo</span></td><td><span class="grade A">9.5</span></td><td>Excelente trabajo, muy detallado</td></tr>
+            <tr><td><b>Ensayo Rev. Industrial</b></td><td>Historia</td><td><span class="chip chip-green">✅ A tiempo</span></td><td><span class="grade B">8.0</span></td><td>Buena argumentación, mejorar referencias</td></tr>
+            <tr><td><b>Quiz cap. 3</b></td><td>Química Org.</td><td><span class="chip chip-green">✅ A tiempo</span></td><td><span class="grade A">9.0</span></td><td>Muy bien resuelto</td></tr>
+            <tr><td><b>Tarea de vectores</b></td><td>Física Moderna</td><td><span class="chip chip-green">✅ A tiempo</span></td><td><span class="grade B">8.5</span></td><td>Correcto, revisar signo en ejercicio 4</td></tr>
+            <tr><td><b>Ejercicios cap. 4</b></td><td>Matemáticas</td><td><span class="chip chip-orange">⚠️ Tarde</span></td><td><span class="grade C">7.0</span></td><td>Entrega tardía, penalización aplicada</td></tr>
+            <tr><td><b>Ejercicios cap. 5</b></td><td>Física Moderna</td><td><span class="chip chip-gray">⏳ Pendiente</span></td><td><span class="chip chip-gray">—</span></td><td>—</td></tr>
+            <tr><td><b>Mapa conceptual</b></td><td>Historia</td><td><span class="chip chip-gray">⏳ Pendiente</span></td><td><span class="chip chip-gray">—</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="page" id="page-calendar">
+      <div class="page-header"><div><div class="page-title">Calendario</div><div class="page-subtitle">Mayo 2026</div></div></div>
+      <div style="background:white;border-radius:var(--radius);padding:28px;box-shadow:var(--card-shadow);margin-bottom:20px;">
+        <div class="cal-grid" style="margin-bottom:8px;font-weight:700;font-size:12px;color:var(--text-muted);">
+          <div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="page-title" style="font-size:18px;margin-bottom:14px;">Mis fechas importantes</div>
+      <div class="feed-card task"><div class="feed-card-header"><div class="feed-icon task">📝</div><div><div class="feed-title">Vence: Ejercicios cap. 5</div><div class="feed-meta">15 mayo · Física Moderna</div></div><span class="chip chip-orange" style="margin-left:auto;">🔥 Urgente</span></div></div>
+      <div class="feed-card announcement"><div class="feed-card-header"><div class="feed-icon ann">📅</div><div><div class="feed-title">Examen Parcial — Matemáticas 3°B</div><div class="feed-meta">17 mayo</div></div><span class="chip chip-blue" style="margin-left:auto;">Examen</span></div></div>
+      <div class="feed-card task"><div class="feed-card-header"><div class="feed-icon task">📐</div><div><div class="feed-title">Vence: Mapa conceptual</div><div class="feed-meta">20 mayo · Historia Universal</div></div></div></div>
+      <div class="feed-card task"><div class="feed-card-header"><div class="feed-icon task">🔬</div><div><div class="feed-title">Vence: Reporte de laboratorio</div><div class="feed-meta">25 mayo · Química Orgánica</div></div></div></div>
+    </div>
+
+    <!-- UNIRSE A CLASE -->
+    <div class="page" id="page-joined">
+      <div class="page-header">
+        <div><div class="page-title">Unirse a una clase</div><div class="page-subtitle">Ingresa el código que te dio tu profesor</div></div>
+      </div>
+      <div style="max-width:400px;">
+        <div style="background:white;border-radius:var(--radius);padding:32px;box-shadow:var(--card-shadow);">
+          <div style="text-align:center;font-size:48px;margin-bottom:16px;">🔑</div>
+          <div class="field">
+            <label>Código de clase</label>
+            <input type="text" id="join-code" placeholder="ej. FIS-3A01" style="font-family:monospace;font-size:20px;text-align:center;letter-spacing:2px;" />
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="joinClass()">Unirse a la clase</button>
+        </div>
+        <div style="margin-top:24px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Tus clases actuales</div>
+          <div id="joined-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ════════ MODALES ════════ -->
+
+<!-- Entregar tarea -->
+<div class="modal-overlay" id="modal-submit">
+  <div class="modal">
+    <div class="modal-title">Entregar tarea</div>
+    <p style="font-size:15px;font-weight:700;margin-bottom:4px;" id="submit-task-name"></p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px;" id="submit-class-name"></p>
+    <p style="font-size:13px;color:var(--accent2);margin-bottom:20px;">⏰ Vence: <span id="submit-due"></span></p>
+    <div class="field">
+      <label>Tu respuesta o comentario al profesor</label>
+      <textarea id="submit-text" placeholder="Escribe tu respuesta, adjunta un enlace o describe lo que entregas…"></textarea>
+    </div>
+    <div class="field">
+      <label>Adjuntar archivo (simulado)</label>
+      <input type="file" style="border:none;background:none;padding:0;font-size:13px;cursor:pointer;" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-submit')">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitTask()">Marcar como entregada ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const classes = [
+  { name:'Física Moderna',    teacher:'Prof. Martínez', room:'Lab. 204', color:'green',  code:'FIS-3A01', icon:'⚛️' },
+  { name:'Matemáticas 3°B',  teacher:'Prof. González', room:'Aula 12',  color:'blue',   code:'MAT-3B01', icon:'📐' },
+  { name:'Historia Universal',teacher:'Prof. Ramírez',  room:'Aula 7',   color:'orange', code:'HIS-2C01', icon:'🏛️' },
+  { name:'Química Orgánica',  teacher:'Prof. Herrera',  room:'Lab. 103', color:'purple', code:'QUI-4A01', icon:'🧪' },
+];
+
+let pendingCount = 3;
+
+function renderClasses() {
+  const html = classes.map(c => `
+    <div class="class-card">
+      <div class="class-card-header ${c.color}">
+        <div class="class-card-title">${c.name}</div>
+        <div class="class-card-sub">${c.teacher}</div>
+        <div class="class-card-avatar">${c.icon}</div>
+      </div>
+      <div class="class-card-body">📍 ${c.room}</div>
+      <div class="class-card-footer">
+        <span class="class-code">${c.code}</span>
+        <button class="btn btn-sm btn-primary" onclick="navigate('pending')">Ver tareas</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('classes-grid').innerHTML = html;
+  document.getElementById('home-classes-grid').innerHTML = html;
+
+  const jl = document.getElementById('joined-list');
+  if (jl) {
+    jl.innerHTML = '';
+    classes.forEach(c => {
+      jl.innerHTML += `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:white;border-radius:10px;margin-bottom:8px;box-shadow:var(--card-shadow);">
+          <span style="font-size:20px;">${c.icon}</span>
+          <div><div style="font-weight:600;font-size:14px;">${c.name}</div><div style="font-size:12px;color:var(--text-muted);">${c.teacher}</div></div>
+          <span class="chip chip-green" style="margin-left:auto;">✅ Inscrito</span>
+        </div>`;
+    });
+  }
+}
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+}
+
+// Modal con contexto de tarea
+function openModal(id, taskName, className, due) {
+  document.getElementById(id).classList.add('open');
+  if (taskName) {
+    document.getElementById('submit-task-name').textContent = taskName;
+    document.getElementById('submit-class-name').textContent = className;
+    document.getElementById('submit-due').textContent = due;
+  }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+
+function submitTask() {
+  const text = document.getElementById('submit-text').value.trim();
+  if (!text) { showToast('⚠️ Escribe tu respuesta antes de entregar'); return; }
+  closeModal('modal-submit');
+  pendingCount = Math.max(0, pendingCount - 1);
+  document.getElementById('pending-count').textContent = pendingCount;
+  document.getElementById('st-pending').textContent = pendingCount;
+  showToast('🎉 Tarea entregada correctamente');
+}
+
+function joinClass() {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (!code) { showToast('⚠️ Ingresa el código de clase'); return; }
+  const found = classes.find(c => c.code === code);
+  if (found) {
+    showToast(`✅ Ya estás inscrito en ${found.name}`);
+  } else {
+    showToast('🔍 Clase con código "' + code + '" no encontrada');
+  }
+  document.getElementById('join-code').value = '';
+}
+
+function buildCalendar() {
+  const g = document.getElementById('cal-grid');
+  const events = [15, 17, 20, 25];
+  const today  = 19;
+  for (let i = 0; i < 4; i++) g.innerHTML += `<div></div>`;
+  for (let d = 1; d <= 31; d++) {
+    const isToday  = d === today;
+    const hasEvent = events.includes(d);
+    const cls = isToday ? 'cal-today' : hasEvent ? 'cal-event' : '';
+    g.innerHTML += `<div class="cal-day ${cls}">${d}</div>`;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+renderClasses();
+buildCalendar();
+</script>
+</body>
+</html>
