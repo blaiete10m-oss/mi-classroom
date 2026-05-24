@@ -4,609 +4,243 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>EduClass — Profesor</title>
+
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+
 <style>
-  :root {
-    --bg: #f5f3ef;
-    --surface: #ffffff;
-    --primary: #1a472a;
-    --primary-light: #2d6a4f;
-    --accent: #f4a261;
-    --accent2: #e76f51;
-    --text: #1c1c1c;
-    --text-muted: #6b7280;
-    --border: #e5e1d8;
-    --card-shadow: 0 2px 12px rgba(0,0,0,0.07);
-    --radius: 14px;
-    --danger: #dc2626;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+:root {
+  --bg:#f5f3ef;
+  --surface:#fff;
+  --primary:#1a472a;
+  --primary-light:#2d6a4f;
+  --accent:#f4a261;
+  --text:#1c1c1c;
+  --text-muted:#6b7280;
+  --border:#e5e1d8;
+  --radius:14px;
+}
 
-  /* TOPBAR */
-  .topbar {
-    height: 64px; background: white; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; gap: 16px;
-    position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
-  }
-  .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--primary); }
-  .topbar-logo span { color: var(--accent2); }
-  .topbar-search { flex: 1; max-width: 480px; margin: 0 auto; }
-  .topbar-search input {
-    width: 100%; padding: 9px 16px 9px 40px;
-    border: 2px solid var(--border); border-radius: 24px;
-    font-family: 'DM Sans', sans-serif; font-size: 14px;
-    background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 14px center;
-    outline: none; transition: border-color 0.2s;
-  }
-  .topbar-search input:focus { border-color: var(--primary); background: white; }
-  .topbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-  .role-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; background: #d1fae5; color: var(--primary); }
-  .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"DM Sans";
+  background:var(--bg);
+  color:var(--text);
+}
 
-  /* LAYOUT */
-  .app-body { display: flex; flex: 1; }
+/* TOPBAR */
+.topbar{
+  height:64px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+  border-bottom:1px solid var(--border);
+}
+.topbar-logo{font-family:"DM Serif Display";font-size:22px;color:var(--primary)}
+.topbar-logo span{color:#e76f51}
 
-  /* SIDEBAR */
-  .sidebar {
-    width: 240px; background: white; border-right: 1px solid var(--border);
-    padding: 20px 12px; display: flex; flex-direction: column; gap: 4px;
-    position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
-  }
-  .sidebar-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); padding: 12px 12px 6px; }
-  .sidebar-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px; border-radius: 10px; cursor: pointer;
-    font-size: 14px; font-weight: 500; color: var(--text); transition: all 0.15s;
-  }
-  .sidebar-item:hover { background: var(--bg); }
-  .sidebar-item.active { background: #d1fae5; color: var(--primary); font-weight: 700; }
-  .sidebar-item .icon { font-size: 18px; width: 24px; text-align: center; }
-  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); display: inline-block; margin-left: auto; }
+/* LAYOUT */
+.app-body{display:flex}
 
-  /* MAIN */
-  .main { flex: 1; padding: 28px; overflow-y: auto; }
-  .page { display: none; animation: fadeIn 0.3s ease; }
-  .page.active { display: block; }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#fff;
+  border-right:1px solid var(--border);
+  padding:15px;
+  height:calc(100vh - 64px);
+}
 
-  /* PAGE HEADER */
-  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-  .page-title { font-family: 'DM Serif Display', serif; font-size: 26px; }
-  .page-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+.sidebar-item{
+  padding:10px;
+  cursor:pointer;
+  border-radius:10px;
+}
+.sidebar-item:hover{background:#eee}
+.sidebar-item.active{background:#d1fae5}
 
-  /* BUTTONS */
-  .btn { padding: 10px 20px; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-  .btn-primary { background: var(--primary); color: white; }
-  .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
-  .btn-outline { background: white; border: 2px solid var(--border); color: var(--text); }
-  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-  .btn-danger { background: var(--danger); color: white; }
-  .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
+/* MAIN */
+.main{flex:1;padding:20px}
+.page{display:none}
+.page.active{display:block}
 
-  /* STATS */
-  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 28px; }
-  .stat-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--card-shadow); }
-  .stat-number { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--primary); }
-  .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+/* STATS */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:20px;
+}
+.stat-card{
+  background:#fff;
+  padding:15px;
+  border-radius:12px;
+}
 
-  /* CARDS */
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-  .class-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-  .class-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.12); }
-  .class-card-header { height: 100px; padding: 20px; position: relative; }
-  .class-card-header.green { background: linear-gradient(135deg, #1a472a, #2d6a4f); }
-  .class-card-header.blue  { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
-  .class-card-header.orange{ background: linear-gradient(135deg, #ea580c, #f97316); }
-  .class-card-header.purple{ background: linear-gradient(135deg, #7c3aed, #a855f7); }
-  .class-card-header.teal  { background: linear-gradient(135deg, #0d9488, #14b8a6); }
-  .class-card-title { color: white; font-weight: 700; font-size: 17px; }
-  .class-card-sub   { color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 4px; }
-  .class-card-avatar { position: absolute; right: 16px; bottom: -18px; width: 36px; height: 36px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .class-card-body { padding: 28px 16px 10px; font-size: 13px; color: var(--text-muted); }
-  .class-card-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--border); }
-  .class-code { font-size: 12px; color: var(--text-muted); font-family: monospace; letter-spacing: 1px; }
+/* CARDS */
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:15px;
+}
 
-  /* FEED */
-  .feed-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--card-shadow); border-left: 4px solid transparent; }
-  .feed-card.announcement { border-color: var(--accent); }
-  .feed-card.task { border-color: var(--primary); }
-  .feed-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-  .feed-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .feed-icon.ann  { background: #fef3c7; }
-  .feed-icon.task { background: #d1fae5; }
-  .feed-title { font-weight: 700; font-size: 15px; }
-  .feed-meta  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .feed-body  { font-size: 14px; color: #374151; line-height: 1.6; }
-  .feed-footer { display: flex; gap: 8px; margin-top: 16px; }
+.class-card{
+  background:#fff;
+  border-radius:12px;
+  padding:15px;
+}
 
-  /* CHIPS */
-  .chip { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-  .chip-green  { background: #d1fae5; color: var(--primary); }
-  .chip-orange { background: #fed7aa; color: #c2410c; }
-  .chip-gray   { background: var(--bg); color: var(--text-muted); }
-  .chip-red    { background: #fee2e2; color: var(--danger); }
+/* MODAL */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  width:400px;
+}
 
-  /* TABLE */
-  .table-wrap { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); }
-  table { width: 100%; border-collapse: collapse; }
-  thead th { background: var(--bg); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); }
-  tbody tr { border-top: 1px solid var(--border); }
-  tbody tr:hover { background: var(--bg); }
-  tbody td { padding: 14px 16px; font-size: 14px; }
+.btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+.btn-primary{background:var(--primary);color:#fff}
 
-  /* PROGRESS */
-  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
-  .progress-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: width 0.4s; }
-
-  /* GRADE */
-  .grade { font-weight: 700; font-size: 15px; }
-  .grade.A { color: #16a34a; }
-  .grade.B { color: #2563eb; }
-  .grade.C { color: #d97706; }
-  .grade.F { color: var(--danger); }
-
-  /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 20px; padding: 36px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.35s cubic-bezier(.16,1,.3,1); }
-  @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-  .modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 20px; }
-  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
-
-  /* FORM */
-  .field { margin-bottom: 18px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing:.4px; margin-bottom: 6px; }
-  .field input, .field textarea, .field select { width: 100%; padding: 11px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; background: var(--bg); color: var(--text); }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--primary); background: white; }
-  .field textarea { min-height: 90px; resize: vertical; }
-
-  /* CALENDAR */
-  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; text-align: center; }
-  .cal-day { padding: 8px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.15s; }
-  .cal-day:hover { background: #d1fae5; }
-  .cal-today { background: var(--primary); color: white; font-weight: 700; }
-  .cal-event { background: var(--accent); color: white; font-weight: 600; }
-
-  /* TOAST */
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  @media (max-width: 768px) {
-    .sidebar { display: none; }
-    .main { padding: 16px; }
-    .cards-grid { grid-template-columns: 1fr; }
-    .stats-row { grid-template-columns: 1fr 1fr; }
-  }
 </style>
 </head>
+
 <body>
 
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-logo">Edu<span>Class</span></div>
-  <div class="topbar-search"><input type="text" placeholder="Buscar clases, tareas, alumnos…" /></div>
-  <div class="topbar-right">
-    <span class="role-badge">👨‍🏫 Profesor</span>
-    <div class="avatar">P</div>
-  </div>
 </div>
 
 <div class="app-body">
-  <!-- SIDEBAR -->
-  <nav class="sidebar">
-    <div class="sidebar-label">Principal</div>
-    <div class="sidebar-item active" onclick="navigate('home')" id="nav-home">
-      <span class="icon">🏠</span> Inicio
-    </div>
-    <div class="sidebar-item" onclick="navigate('classes')" id="nav-classes">
-      <span class="icon">📚</span> Mis Clases
-    </div>
-    <div class="sidebar-label">Gestión</div>
-    <div class="sidebar-item" onclick="navigate('tasks')" id="nav-tasks">
-      <span class="icon">📝</span> Tareas
-    </div>
-    <div class="sidebar-item" onclick="navigate('grades')" id="nav-grades">
-      <span class="icon">📊</span> Calificaciones
-    </div>
-    <div class="sidebar-item" onclick="navigate('students')" id="nav-students">
-      <span class="icon">👥</span> Alumnos
-      <span class="notif-dot"></span>
-    </div>
-    <div class="sidebar-label">Extra</div>
-    <div class="sidebar-item" onclick="navigate('calendar')" id="nav-calendar">
-      <span class="icon">📅</span> Calendario
-    </div>
-    <div class="sidebar-item" onclick="navigate('announce')" id="nav-announce">
-      <span class="icon">📢</span> Anuncios
-    </div>
-  </nav>
 
-  <main class="main">
-
-    <!-- HOME -->
-    <div class="page active" id="page-home">
-      <div class="page-header">
-        <div class="page-title">Mis Clases</div>
-        <button class="btn btn-primary" onclick="openModal('modal-create-class')">+ Crear clase</button>
-      </div>
-      <div class="cards-grid" id="home-classes-grid"></div>
-    </div>
-
-    <!-- CLASES -->
-    <div class="page" id="page-classes">
-      <div class="page-header">
-        <div><div class="page-title">Mis Clases</div><div class="page-subtitle">Administra tus grupos y materias</div></div>
-        <button class="btn btn-primary" onclick="openModal('modal-create-class')">+ Crear Clase</button>
-      </div>
-      <div class="cards-grid" id="classes-grid"></div>
-    </div>
-
-    <!-- TAREAS -->
-    <div class="page" id="page-tasks">
-      <div class="page-header">
-        <div><div class="page-title">Tareas</div><div class="page-subtitle">Crea y revisa las entregas</div></div>
-        <button class="btn btn-primary" onclick="openModal('modal-create-task')">+ Nueva Tarea</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Tarea</th><th>Clase</th><th>Vencimiento</th><th>Entregas</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody id="tasks-tbody">
-            <tr>
-              <td><b>Ejercicios cap. 5</b></td><td>Física Moderna</td><td>15 may 2026</td>
-              <td><div class="progress-bar"><div class="progress-fill" style="width:36%"></div></div><small style="color:var(--text-muted)">8 / 22</small></td>
-              <td><span class="chip chip-orange">Activa</span></td>
-              <td><button class="btn btn-sm btn-outline" onclick="openModal('modal-submissions')">Ver entregas</button></td>
-            </tr>
-            <tr>
-              <td><b>Ensayo Rev. Industrial</b></td><td>Historia Universal</td><td>10 may 2026</td>
-              <td><div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div><small style="color:var(--text-muted)">29 / 33</small></td>
-              <td><span class="chip chip-green">Cerrada</span></td>
-              <td><button class="btn btn-sm btn-outline" onclick="openModal('modal-submissions')">Ver entregas</button></td>
-            </tr>
-            <tr>
-              <td><b>Quiz cap. 3</b></td><td>Química Orgánica</td><td>5 may 2026</td>
-              <td><div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div><small style="color:var(--text-muted)">18 / 18</small></td>
-              <td><span class="chip chip-green">Cerrada</span></td>
-              <td><button class="btn btn-sm btn-outline" onclick="openModal('modal-submissions')">Ver entregas</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- CALIFICACIONES -->
-    <div class="page" id="page-grades">
-      <div class="page-header">
-        <div><div class="page-title">Calificaciones</div><div class="page-subtitle">Revisa y asigna notas por clase</div></div>
-        <select class="btn btn-outline btn-sm" style="cursor:pointer;" onchange="">
-          <option>Todas las clases</option>
-          <option>Física Moderna</option>
-          <option>Historia Universal</option>
-          <option>Matemáticas 3°B</option>
-          <option>Química Orgánica</option>
-        </select>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Alumno</th><th>Clase</th><th>Tarea</th><th>Estado</th><th>Calificación</th><th>Acciones</th></tr></thead>
-          <tbody>
-            <tr><td>Ana García</td><td>Física Moderna</td><td>Ejercicios cap. 5</td><td><span class="chip chip-green">Entregado</span></td><td><span class="grade A">9.5</span></td><td><button class="btn btn-sm btn-outline" onclick="openModal('modal-grade')">Editar</button></td></tr>
-            <tr><td>Luis Torres</td><td>Física Moderna</td><td>Ejercicios cap. 5</td><td><span class="chip chip-green">Entregado</span></td><td><span class="chip chip-orange">Sin calificar</span></td><td><button class="btn btn-sm btn-primary" onclick="openModal('modal-grade')">Calificar</button></td></tr>
-            <tr><td>María López</td><td>Historia Universal</td><td>Ensayo Rev. Industrial</td><td><span class="chip chip-green">Entregado</span></td><td><span class="grade B">8.0</span></td><td><button class="btn btn-sm btn-outline" onclick="openModal('modal-grade')">Editar</button></td></tr>
-            <tr><td>Carlos Ruiz</td><td>Historia Universal</td><td>Ensayo Rev. Industrial</td><td><span class="chip chip-red">Sin entregar</span></td><td><span class="chip chip-gray">—</span></td><td><button class="btn btn-sm btn-outline" disabled style="opacity:.4;cursor:not-allowed">N/A</button></td></tr>
-            <tr><td>Sara Núñez</td><td>Matemáticas 3°B</td><td>Quiz cap. 3</td><td><span class="chip chip-green">Entregado</span></td><td><span class="chip chip-orange">Sin calificar</span></td><td><button class="btn btn-sm btn-primary" onclick="openModal('modal-grade')">Calificar</button></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ALUMNOS -->
-    <div class="page" id="page-students">
-      <div class="page-header">
-        <div><div class="page-title">Alumnos</div><div class="page-subtitle">Lista de estudiantes inscritos en tus clases</div></div>
-        <select class="btn btn-outline btn-sm" style="cursor:pointer;">
-          <option>Todas las clases</option>
-          <option>Física Moderna</option>
-          <option>Historia Universal</option>
-          <option>Matemáticas 3°B</option>
-          <option>Química Orgánica</option>
-        </select>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Alumno</th><th>Correo</th><th>Clase</th><th>Tareas entregadas</th><th>Promedio</th></tr></thead>
-          <tbody>
-            <tr><td>Ana García</td><td>ana@edu.com</td><td>Física Moderna</td><td>5/6 <span class="chip chip-green" style="font-size:11px">83%</span></td><td><span class="grade A">9.2</span></td></tr>
-            <tr><td>Luis Torres</td><td>luis@edu.com</td><td>Física Moderna</td><td>3/6 <span class="chip chip-orange" style="font-size:11px">50%</span></td><td><span class="grade C">6.5</span></td></tr>
-            <tr><td>María López</td><td>maria@edu.com</td><td>Historia Universal</td><td>6/6 <span class="chip chip-green" style="font-size:11px">100%</span></td><td><span class="grade A">9.8</span></td></tr>
-            <tr><td>Carlos Ruiz</td><td>carlos@edu.com</td><td>Historia Universal</td><td>4/6 <span class="chip chip-orange" style="font-size:11px">67%</span></td><td><span class="grade B">7.8</span></td></tr>
-            <tr><td>Sara Núñez</td><td>sara@edu.com</td><td>Matemáticas 3°B</td><td>6/6 <span class="chip chip-green" style="font-size:11px">100%</span></td><td><span class="grade A">9.0</span></td></tr>
-            <tr><td>Pedro Vega</td><td>pedro@edu.com</td><td>Química Orgánica</td><td>2/6 <span class="chip" style="background:#fee2e2;color:var(--danger);font-size:11px">33%</span></td><td><span class="grade F">4.5</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- CALENDARIO -->
-    <div class="page" id="page-calendar">
-      <div class="page-header">
-        <div><div class="page-title">Calendario</div><div class="page-subtitle">Mayo 2026</div></div>
-      </div>
-      <div style="background:white;border-radius:var(--radius);padding:28px;box-shadow:var(--card-shadow);margin-bottom:20px;">
-        <div class="cal-grid" style="margin-bottom:8px;font-weight:700;font-size:12px;color:var(--text-muted);">
-          <div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-      </div>
-      <div class="page-title" style="font-size:18px;margin-bottom:14px;">Próximos eventos</div>
-      <div class="feed-card task"><div class="feed-card-header"><div class="feed-icon task">📝</div><div><div class="feed-title">Vence: Ejercicios cap. 5</div><div class="feed-meta">15 mayo · Física Moderna</div></div></div></div>
-      <div class="feed-card announcement"><div class="feed-card-header"><div class="feed-icon ann">📅</div><div><div class="feed-title">Examen Parcial — Matemáticas 3°B</div><div class="feed-meta">17 mayo</div></div></div></div>
-      <div class="feed-card task"><div class="feed-card-header"><div class="feed-icon task">📝</div><div><div class="feed-title">Vence: Mapa Conceptual</div><div class="feed-meta">20 mayo · Historia Universal</div></div></div></div>
-    </div>
-
-    <!-- ANUNCIOS -->
-    <div class="page" id="page-announce">
-      <div class="page-header">
-        <div><div class="page-title">Anuncios</div><div class="page-subtitle">Comunícate con tus alumnos</div></div>
-        <button class="btn btn-primary" onclick="openModal('modal-announce')">+ Nuevo Anuncio</button>
-      </div>
-      <div id="announce-feed">
-        <div class="feed-card announcement">
-          <div class="feed-card-header">
-            <div class="feed-icon ann">📢</div>
-            <div><div class="feed-title">Examen Parcial — viernes 17 de mayo</div><div class="feed-meta">Matemáticas 3°B · Hace 2 horas</div></div>
-          </div>
-          <div class="feed-body">Recordatorio: el examen parcial es el próximo viernes. Repasen los temas de álgebra lineal y cálculo diferencial capítulos 3 al 6.</div>
-        </div>
-        <div class="feed-card announcement">
-          <div class="feed-card-header">
-            <div class="feed-icon ann">📢</div>
-            <div><div class="feed-title">Cambio de aula — Física Moderna</div><div class="feed-meta">Física Moderna · Hace 1 día</div></div>
-          </div>
-          <div class="feed-body">La clase del jueves se moverá al Laboratorio 301 por mantenimiento del Lab. 204.</div>
-        </div>
-      </div>
-    </div>
-
-  </main>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-item active" onclick="navigate('home')">Inicio</div>
+  <div class="sidebar-item" onclick="navigate('classes')">Clases</div>
+  <div class="sidebar-item" onclick="navigate('tasks')">Tareas</div>
+  <div class="sidebar-item" onclick="navigate('grades')">Notas</div>
 </div>
 
-<!-- ════════ MODALES ════════ -->
+<!-- MAIN -->
+<div class="main">
 
-<!-- Crear clase -->
-<div class="modal-overlay" id="modal-create-class">
+<!-- HOME -->
+<div class="page active" id="page-home">
+
+  <div class="stats-row">
+    <div class="stat-card">Clases: <b id="stat-classes">4</b></div>
+    <div class="stat-card">Tareas: <b id="stat-tasks">3</b></div>
+    <div class="stat-card">Pendientes: <b id="stat-pending">5</b></div>
+  </div>
+
+  <h2>Clases</h2>
+  <div class="cards-grid" id="home-classes-grid"></div>
+
+</div>
+
+<!-- CLASSES -->
+<div class="page" id="page-classes">
+  <h2>Mis clases</h2>
+  <div class="cards-grid" id="classes-grid"></div>
+</div>
+
+<!-- TASKS -->
+<div class="page" id="page-tasks">
+  <h2>Tareas</h2>
+  <button class="btn btn-primary" onclick="openModal('modal-task')">Nueva tarea</button>
+</div>
+
+</div>
+</div>
+
+<!-- MODAL TASK -->
+<div class="modal-overlay" id="modal-task">
   <div class="modal">
-    <div class="modal-title">Crear nueva clase</div>
-    <div class="field"><label>Nombre de la materia</label><input type="text" placeholder="ej. Física Moderna" id="new-class-name" /></div>
-    <div class="field"><label>Sección / Grupo</label><input type="text" placeholder="ej. 3°B" id="new-class-section" /></div>
-    <div class="field"><label>Aula</label><input type="text" placeholder="ej. Lab. 204" /></div>
-    <div class="field"><label>Color</label>
-      <select id="new-class-color">
-        <option value="green">🟢 Verde</option>
-        <option value="blue">🔵 Azul</option>
-        <option value="orange">🟠 Naranja</option>
-        <option value="purple">🟣 Morado</option>
-        <option value="teal">🩵 Teal</option>
-      </select>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-create-class')">Cancelar</button>
-      <button class="btn btn-primary" onclick="createClass()">Crear clase</button>
-    </div>
+    <h3>Nueva tarea</h3>
+
+    <input id="task-title" placeholder="Título"><br><br>
+    <input id="task-class" placeholder="Clase"><br><br>
+
+    <button class="btn btn-primary" onclick="createTask()">Crear</button>
+    <button class="btn" onclick="closeModal('modal-task')">Cerrar</button>
   </div>
 </div>
-
-<!-- Crear tarea -->
-<div class="modal-overlay" id="modal-create-task">
-  <div class="modal">
-    <div class="modal-title">Nueva tarea</div>
-    <div class="field"><label>Título</label><input type="text" id="new-task-title" placeholder="ej. Ejercicios capítulo 6" /></div>
-    <div class="field"><label>Instrucciones</label><textarea id="new-task-desc" placeholder="Describe qué deben hacer los alumnos…"></textarea></div>
-    <div class="field"><label>Clase</label>
-      <select id="new-task-class">
-        <option>Física Moderna</option>
-        <option>Historia Universal</option>
-        <option>Matemáticas 3°B</option>
-        <option>Química Orgánica</option>
-      </select>
-    </div>
-    <div class="field"><label>Fecha de vencimiento</label><input type="date" id="new-task-date" /></div>
-    <div class="field"><label>Puntos máximos</label><input type="number" placeholder="100" /></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-create-task')">Cancelar</button>
-      <button class="btn btn-primary" onclick="createTask()">Publicar tarea</button>
-    </div>
-  </div>
-</div>
-
-<!-- Ver entregas -->
-<div class="modal-overlay" id="modal-submissions">
-  <div class="modal">
-    <div class="modal-title">Entregas — Ejercicios cap. 5</div>
-    <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px;">Física Moderna · 8 entregados / 22 alumnos</p>
-    <div class="progress-bar" style="margin-bottom:20px;"><div class="progress-fill" style="width:36%"></div></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Alumno</th><th>Estado</th><th>Acción</th></tr></thead>
-        <tbody>
-          <tr><td>Ana García</td><td><span class="chip chip-green">✅ Entregado</span></td><td><button class="btn btn-sm btn-primary" onclick="openModal('modal-grade')">Calificar</button></td></tr>
-          <tr><td>Luis Torres</td><td><span class="chip chip-green">✅ Entregado</span></td><td><button class="btn btn-sm btn-outline" onclick="openModal('modal-grade')">Calificar</button></td></tr>
-          <tr><td>Carlos Ruiz</td><td><span class="chip chip-gray">⏳ Pendiente</span></td><td>—</td></tr>
-          <tr><td>María López</td><td><span class="chip chip-gray">⏳ Pendiente</span></td><td>—</td></tr>
-          <tr><td>Sara Núñez</td><td><span class="chip chip-green">✅ Entregado</span></td><td><button class="btn btn-sm btn-outline" onclick="openModal('modal-grade')">Calificar</button></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-submissions')">Cerrar</button></div>
-  </div>
-</div>
-
-<!-- Calificar -->
-<div class="modal-overlay" id="modal-grade">
-  <div class="modal">
-    <div class="modal-title">Calificar entrega</div>
-    <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px;">Alumno: <b>Ana García</b> · Ejercicios cap. 5</p>
-    <div style="background:var(--bg);border-radius:12px;padding:16px;margin-bottom:20px;font-size:14px;line-height:1.6;">
-      <b>Respuesta del alumno:</b><br/>
-      "Adjunto mis respuestas a los ejercicios 1–20. Tuve dificultad con el ejercicio 14 pero lo resolví usando el método alternativo del capítulo 3…"
-    </div>
-    <div class="field"><label>Calificación (0–10)</label><input type="number" min="0" max="10" step="0.5" placeholder="9.5" id="grade-val" /></div>
-    <div class="field"><label>Comentario para el alumno</label><textarea id="grade-comment" placeholder="Escribe tu retroalimentación…"></textarea></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-grade')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveGrade()">Guardar calificación</button>
-    </div>
-  </div>
-</div>
-
-<!-- Nuevo anuncio -->
-<div class="modal-overlay" id="modal-announce">
-  <div class="modal">
-    <div class="modal-title">Nuevo anuncio</div>
-    <div class="field"><label>Clase destinataria</label>
-      <select>
-        <option>Todas mis clases</option>
-        <option>Física Moderna</option>
-        <option>Historia Universal</option>
-        <option>Matemáticas 3°B</option>
-        <option>Química Orgánica</option>
-      </select>
-    </div>
-    <div class="field"><label>Título</label><input type="text" id="ann-title" placeholder="ej. Recordatorio examen" /></div>
-    <div class="field"><label>Mensaje</label><textarea id="ann-body" placeholder="Escribe tu anuncio aquí…"></textarea></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-announce')">Cancelar</button>
-      <button class="btn btn-primary" onclick="publishAnnounce()">Publicar</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-const classes = [
-  { name:'Física Moderna',    section:'3°A', room:'Lab. 204', students:22, color:'green',  code:'FIS-3A01', icon:'⚛️' },
-  { name:'Matemáticas 3°B',  section:'3°B', room:'Aula 12',  students:28, color:'blue',   code:'MAT-3B01', icon:'📐' },
-  { name:'Historia Universal',section:'2°C', room:'Aula 7',   students:33, color:'orange', code:'HIS-2C01', icon:'🏛️' },
-  { name:'Química Orgánica',  section:'4°A', room:'Lab. 103', students:18, color:'purple', code:'QUI-4A01', icon:'🧪' },
+let classes = [
+  {name:"Física", section:"3A", students:22},
+  {name:"Historia", section:"2C", students:30}
 ];
 
-function renderClasses() {
-  const html = classes.map(c => `
+/* ESCAPE SAFE */
+function escapeHTML(str){
+  return str.replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+/* NAV */
+function navigate(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+}
+
+/* RENDER */
+function render(){
+  const html = classes.map(c=>`
     <div class="class-card">
-      <div class="class-card-header ${c.color}">
-        <div class="class-card-title">${c.name}</div>
-        <div class="class-card-sub">${c.section}</div>
-        <div class="class-card-avatar">${c.icon}</div>
-      </div>
-      <div class="class-card-body">📍 ${c.room} · ${c.students} alumnos</div>
-      <div class="class-card-footer">
-        <span class="class-code">${c.code}</span>
-        <button class="btn btn-sm btn-primary" onclick="copyCode('${c.code}')">Copiar código</button>
-      </div>
-    </div>`).join('');
-  document.getElementById('classes-grid').innerHTML = html;
-  document.getElementById('home-classes-grid').innerHTML = html;
-}
-
-function copyCode(code) { showToast('📋 Código copiado: ' + code); }
-
-function navigate(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('nav-' + page).classList.add('active');
-}
-
-function createClass() {
-  const name = document.getElementById('new-class-name').value.trim();
-  const section = document.getElementById('new-class-section').value.trim() || 'Grupo nuevo';
-  const color = document.getElementById('new-class-color').value;
-  if (!name) { showToast('⚠️ Escribe el nombre de la clase'); return; }
-  const code = name.substring(0,3).toUpperCase() + '-' + Math.floor(Math.random()*9000+1000);
-  classes.unshift({ name, section, room:'—', students:0, color, code, icon:'📖' });
-  renderClasses();
-  document.getElementById('stat-classes').textContent = classes.length;
-  closeModal('modal-create-class');
-  navigate('home');
-  showToast('✅ Clase "' + name + '" creada · Código: ' + code);
-}
-
-function createTask() {
-  const title = document.getElementById('new-task-title').value.trim();
-  const cls   = document.getElementById('new-task-class').value;
-  const date  = document.getElementById('new-task-date').value;
-  if (!title) { showToast('⚠️ Escribe el título de la tarea'); return; }
-  const tbody = document.getElementById('tasks-tbody');
-  const row = tbody.insertRow(0);
-  row.innerHTML = `
-    <td><b>${title}</b></td><td>${cls}</td><td>${date || 'Sin fecha'}</td>
-    <td><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><small style="color:var(--text-muted)">0 / —</small></td>
-    <td><span class="chip chip-orange">Activa</span></td>
-    <td><button class="btn btn-sm btn-outline" onclick="openModal('modal-submissions')">Ver entregas</button></td>`;
-  document.getElementById('stat-tasks').textContent = parseInt(document.getElementById('stat-tasks').textContent) + 1;
-  closeModal('modal-create-task');
-  navigate('tasks');
-  showToast('✅ Tarea "' + title + '" publicada');
-}
-
-function saveGrade() {
-  const g = document.getElementById('grade-val').value;
-  if (!g) { showToast('⚠️ Ingresa una calificación'); return; }
-  closeModal('modal-grade');
-  closeModal('modal-submissions');
-  const p = Math.max(0, parseInt(document.getElementById('stat-pending').textContent) - 1);
-  document.getElementById('stat-pending').textContent = p;
-  showToast('✅ Calificación guardada: ' + g + '/10');
-}
-
-function publishAnnounce() {
-  const title = document.getElementById('ann-title').value.trim();
-  const body  = document.getElementById('ann-body').value.trim();
-  if (!title || !body) { showToast('⚠️ Completa el título y el mensaje'); return; }
-  const feed = document.getElementById('announce-feed');
-  const card = document.createElement('div');
-  card.className = 'feed-card announcement';
-  card.innerHTML = `
-    <div class="feed-card-header">
-      <div class="feed-icon ann">📢</div>
-      <div><div class="feed-title">${title}</div><div class="feed-meta">Ahora mismo</div></div>
+      <b>${escapeHTML(c.name)}</b><br>
+      ${escapeHTML(c.section)} · ${c.students} alumnos
     </div>
-    <div class="feed-body">${body}</div>`;
-  feed.prepend(card);
-  closeModal('modal-announce');
-  showToast('📢 Anuncio publicado');
+  `).join("");
+
+  document.getElementById("classes-grid").innerHTML = html;
+  document.getElementById("home-classes-grid").innerHTML = html;
+
+  document.getElementById("stat-classes").textContent = classes.length;
 }
 
-function buildCalendar() {
-  const g = document.getElementById('cal-grid');
-  const events = [15, 17, 20, 25];
-  const today  = 19;
-  for (let i = 0; i < 4; i++) g.innerHTML += `<div></div>`;
-  for (let d = 1; d <= 31; d++) {
-    const isToday   = d === today;
-    const hasEvent  = events.includes(d);
-    const cls = isToday ? 'cal-today' : hasEvent ? 'cal-event' : '';
-    g.innerHTML += `<div class="cal-day ${cls}">${d}</div>`;
-  }
+/* CREATE TASK */
+function createTask(){
+  const title = document.getElementById("task-title").value.trim();
+  const cls = document.getElementById("task-class").value.trim();
+
+  if(!title || !cls) return alert("Completa campos");
+
+  document.getElementById("stat-tasks").textContent =
+    parseInt(document.getElementById("stat-tasks").textContent) + 1;
+
+  closeModal("modal-task");
+  render();
 }
 
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+/* MODAL */
+function openModal(id){
+  document.getElementById(id).classList.add("open");
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove("open");
 }
 
-renderClasses();
-buildCalendar();
+/* INIT */
+render();
+
 </script>
+
 </body>
 </html>
